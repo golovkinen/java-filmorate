@@ -9,7 +9,7 @@ public interface UserServiceInterface {
     List<User> readAll ();
     User read (int id);
 
-    boolean update(User user);
+    boolean update(User user, int id);
 
     boolean delete(int id);
 }

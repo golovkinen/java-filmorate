@@ -37,10 +37,10 @@ public class UserService implements UserServiceInterface {
     }
 
     @Override
-    public boolean update(User user) {
+    public boolean update(User user, int id) {
 
-        if (user.getId() != null && USERS_MAP.containsKey(user.getId())) {
-            USERS_MAP.put(user.getId(), user);
+        if (user.getId() == id && USERS_MAP.containsKey(id)) {
+            USERS_MAP.put(id, user);
             return true;
         }
 

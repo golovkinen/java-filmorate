@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Service
 public class FilmService implements FilmServiceInterface {
 
-    private static final Map<Integer, Film> FILMS_MAP = new HashMap<>();
+    private static final Map<Integer, Film> FILMS_MAP = new HashMap<Integer, Film>();
     private static final AtomicInteger FILM_ID_HOLDER = new AtomicInteger();
 
     @Override
@@ -34,9 +34,9 @@ public class FilmService implements FilmServiceInterface {
     }
 
     @Override
-    public boolean update(Film film) {
-        if (film.getId() != null && FILMS_MAP.containsKey(film.getId())) {
-            FILMS_MAP.put(film.getId(), film);
+    public boolean update(Film film, int id) {
+        if (film.getId() == id && FILMS_MAP.containsKey(id)) {
+            FILMS_MAP.put(id, film);
             return true;
         }
         return false;

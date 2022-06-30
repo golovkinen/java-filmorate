@@ -9,6 +9,6 @@ public interface FilmServiceInterface {
     Film create (Film film);
     List<Film> readAll ();
     Film read (int id);
-    boolean update (Film film);
+    boolean update (Film film, int id);
     boolean delete(int id);
 }

@@ -17,7 +17,7 @@ import java.time.LocalDate;
 
 public class User {
 
-    private Integer id;
+    private int id;
     @NotBlank
     @Email (message = "Please enter a valid e-mail address")
     @NonNull

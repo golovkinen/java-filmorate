@@ -27,6 +27,7 @@ public class UserController {
     public ResponseEntity<Collection<User>> readAll() {
         final Collection <User> users = userServiceInterface.readAll();
         log.debug("Текущее количество пользователей: {}", users.size());
+        System.out.println(users);
         return users != null && !users.isEmpty()
                 ? new ResponseEntity<>(users, HttpStatus.OK)
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -51,13 +52,13 @@ public class UserController {
                 : new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    @PutMapping
-    public ResponseEntity<User> update(@Valid @RequestBody User user) {
+    @PutMapping(value = "/{id}")
+    public ResponseEntity<User> update(@PathVariable(name = "id") int id, @Valid @RequestBody User user) {
 
-        final boolean updated = userServiceInterface.update(user);
+        final boolean updated = userServiceInterface.update(user, id);
 
         return updated
-                ? new ResponseEntity<>(userServiceInterface.read(user.getId()), HttpStatus.OK)
+                ? new ResponseEntity<>(userServiceInterface.read(id), HttpStatus.OK)
                 : new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

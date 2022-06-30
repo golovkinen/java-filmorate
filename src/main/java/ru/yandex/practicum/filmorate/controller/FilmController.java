@@ -56,13 +56,13 @@ public class FilmController {
                 : new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    @PutMapping
-    public ResponseEntity<Film> update(@Valid @RequestBody Film film) {
+    @PutMapping(value = "/{id}")
+    public ResponseEntity<Film> update(@PathVariable(name = "id") int id, @Valid @RequestBody Film film) {
 
-        final boolean updated = filmServiceInterface.update(film);
-        log.debug(String.valueOf(filmServiceInterface.read(film.getId())));
+        final boolean updated = filmServiceInterface.update(film, id);
+        log.debug(String.valueOf(filmServiceInterface.read(id)));
         return updated
-                ? new ResponseEntity<>(filmServiceInterface.read(film.getId()), HttpStatus.OK)
+                ? new ResponseEntity<>(filmServiceInterface.read(id), HttpStatus.OK)
                 : new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
