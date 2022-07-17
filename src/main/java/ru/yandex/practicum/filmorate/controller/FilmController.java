@@ -9,7 +9,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmServiceInterface;
 
 import javax.validation.Valid;
-import java.time.LocalDate;
 import java.util.Collection;
 
 @RestController
@@ -45,10 +44,6 @@ public class FilmController {
     @PostMapping
     public ResponseEntity<Film> create(@Valid @RequestBody Film film) {
 
-        if (film.getReleaseDate().isBefore(LocalDate.of(1895,12,28))) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-
         final Film newFilm = filmServiceInterface.create(film);
         log.debug(String.valueOf(newFilm));
         return newFilm != null
@@ -73,5 +68,6 @@ public class FilmController {
         return deleted
                 ? new ResponseEntity<>(HttpStatus.OK)
                 : new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+
     }
 }
