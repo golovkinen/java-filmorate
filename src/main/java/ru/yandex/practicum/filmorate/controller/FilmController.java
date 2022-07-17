@@ -6,7 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.service.FilmServiceInterface;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import javax.validation.Valid;
 import java.util.Collection;
@@ -16,16 +17,15 @@ import java.util.Collection;
 @RequestMapping("/films")
 public class FilmController {
 
-    private final FilmServiceInterface filmServiceInterface;
+    @Autowired
+    FilmStorage filmStorage;
 
     @Autowired
-    public FilmController(FilmServiceInterface filmServiceInterface) {
-        this.filmServiceInterface = filmServiceInterface;
-    }
+    FilmService filmService;
 
     @GetMapping
     public ResponseEntity<Collection<Film>> readAllFilms() {
-        final Collection <Film> films = filmServiceInterface.readAll();
+        final Collection <Film> films = filmStorage.readAll();
         log.debug("Текущее количество пользователей: {}", films.size());
         return films != null && !films.isEmpty()
                 ? new ResponseEntity<>(films, HttpStatus.OK)
@@ -34,7 +34,7 @@ public class FilmController {
 
     @GetMapping(value = "/{id}")
     public ResponseEntity<Film> read (@PathVariable(name = "id") int id) {
-        final Film film = filmServiceInterface.read(id);
+        final Film film = filmStorage.read(id);
 
         return film != null
                 ? new ResponseEntity<>(film, HttpStatus.OK)
@@ -44,7 +44,7 @@ public class FilmController {
     @PostMapping
     public ResponseEntity<Film> create(@Valid @RequestBody Film film) {
 
-        final Film newFilm = filmServiceInterface.create(film);
+        final Film newFilm = filmStorage.create(film);
         log.debug(String.valueOf(newFilm));
         return newFilm != null
                 ? new ResponseEntity<>(newFilm, HttpStatus.CREATED)
@@ -54,16 +54,53 @@ public class FilmController {
     @PutMapping
     public ResponseEntity<Film> update(@Valid @RequestBody Film film) {
 
-        final boolean updated = filmServiceInterface.update(film);
-        log.debug(String.valueOf(filmServiceInterface.read(film.getId())));
+        final boolean updated = filmStorage.update(film);
+        log.debug(String.valueOf(filmStorage.read(film.getId())));
         return updated
-                ? new ResponseEntity<>(filmServiceInterface.read(film.getId()), HttpStatus.OK)
+                ? new ResponseEntity<>(filmStorage.read(film.getId()), HttpStatus.OK)
                 : new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<?> delete(@PathVariable(name = "id") int id) {
-        final boolean deleted = filmServiceInterface.delete(id);
+        final boolean deleted = filmStorage.delete(id);
+
+        return deleted
+                ? new ResponseEntity<>(HttpStatus.OK)
+                : new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+
+    }
+
+    @PutMapping(value = "/{filmId}/likes/{userId}")
+    public ResponseEntity<?> addFriend (@PathVariable int filmId,
+                                        @PathVariable int userId) {
+
+            final boolean liked = filmService.addLike(filmId, userId);
+
+        return liked
+                ? new ResponseEntity<>(HttpStatus.OK)
+                : new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @GetMapping(value = "/popular")
+    public ResponseEntity<Collection<Film>> readTenBestFilms(@RequestParam(defaultValue = "10") int count) {
+
+        if (count <= 0) {
+            count = 10;
+        }
+
+        final Collection <Film> topTenFilms = filmService.readTenBestFilms(count);
+
+        return topTenFilms != null && !topTenFilms.isEmpty()
+                ? new ResponseEntity<>(topTenFilms, HttpStatus.OK)
+                : new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @DeleteMapping(value = "/{filmId}/likes/{userId}")
+    public ResponseEntity<?> deleteFriend (@PathVariable int filmId,
+                                           @PathVariable int userId) {
+
+        final boolean deleted = filmService.deleteLike(filmId, userId);
 
         return deleted
                 ? new ResponseEntity<>(HttpStatus.OK)
