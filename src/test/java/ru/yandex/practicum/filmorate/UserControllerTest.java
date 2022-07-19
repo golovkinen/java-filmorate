@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +8,13 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
+
+import java.time.LocalDate;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -19,6 +27,17 @@ import static org.hamcrest.Matchers.*;
 public class UserControllerTest {
     @Autowired
     MockMvc mockMvc;
+
+    @Autowired
+    UserStorage userStorage;
+
+    @Autowired
+    UserService userService;
+
+    @AfterEach
+    public void resetDB () {
+        userStorage.deleteAll();
+    }
 
     @Test
     @DisplayName("POST /users Создаю пользователя без имени")
@@ -139,6 +158,9 @@ public class UserControllerTest {
     @DisplayName("PUT /users")
     void testUpdateUserSuccess() throws Exception {
 
+        User user1 = new User("Email1@mail.com", "Login1", "Name1", LocalDate.of(1981, 7, 11));
+        userStorage.create(user1);
+
         // Execute the PUT request
         mockMvc.perform(put("/users")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -166,7 +188,7 @@ public class UserControllerTest {
                         .content("{\"id\":3,\"email\":\"Email1@mail.com\",\"login\":\"Login1\",\"name\":\"Name1\",\"birthday\":\"1981-07-11\"}"))
 
                 // Validate the response code and content type
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -183,9 +205,208 @@ public class UserControllerTest {
     @DisplayName("DELETE /users/1 - OK")
     void testDeleteUserById() throws Exception {
 
+        User user1 = new User("Email1@mail.com", "Login1", "Name1", LocalDate.of(1981, 7, 11));
+        userStorage.create(user1);
+
         // Execute the GET request
         mockMvc.perform(delete("/users/{id}", 1))
                 // Validate the response code
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("PUT /users/{userId}/friends/{friendId} Добавляю друзей")
+    void addFriend() throws Exception {
+
+        User user1 = new User("Email1@mail.com", "Login1", "Name1", LocalDate.of(1981, 7, 11));
+        userStorage.create(user1);
+
+        User user2 = new User("Email2@mail.com", "Login2", "Name2", LocalDate.of(1985, 10, 15));
+        userStorage.create(user2);
+
+        mockMvc.perform(put("/users/{userId}/friends/{friendId}", 1, 2))
+
+                // Validate the response code and content type
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("PUT /users/{userId}/friends/{friendId} Пользователя нет")
+    void addFriendNoUserFriendInMapError() throws Exception {
+
+        User user1 = new User("Email1@mail.com", "Login1", "Name1", LocalDate.of(1981, 7, 11));
+        userStorage.create(user1);
+
+        User user2 = new User("Email2@mail.com", "Login2", "Name2", LocalDate.of(1985, 10, 15));
+        userStorage.create(user2);
+
+        mockMvc.perform(put("/users/{userId}/friends/{friendId}", 3, 2))
+
+                // Validate the response code and content type
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("PUT /users/{userId}/friends/{friendId} Друга пользователя нет")
+    void addFriendNoFriendInMapError() throws Exception {
+
+        User user1 = new User("Email1@mail.com", "Login1", "Name1", LocalDate.of(1981, 7, 11));
+        userStorage.create(user1);
+
+        User user2 = new User("Email2@mail.com", "Login2", "Name2", LocalDate.of(1985, 10, 15));
+        userStorage.create(user2);
+
+        mockMvc.perform(put("/users/{userId}/friends/{friendId}", 1, 3))
+
+                // Validate the response code and content type
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("PUT /users/{userId}/friends/{friendId} Если ID отрицательный или ноль")
+    void addFriendZeroAndMinusError() throws Exception {
+
+        User user1 = new User("Email1@mail.com", "Login1", "Name1", LocalDate.of(1981, 7, 11));
+        userStorage.create(user1);
+
+        User user2 = new User("Email2@mail.com", "Login2", "Name2", LocalDate.of(1985, 10, 15));
+        userStorage.create(user2);
+
+        mockMvc.perform(put("/users/{userId}/friends/{friendId}", -1, 0))
+
+                // Validate the response code and content type
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("GET /users/{userId}/friends Получаю список друзей")
+    void getUserFriendsList() throws Exception {
+
+        User user1 = new User("Email1@mail.com", "Login1", "Name1", LocalDate.of(1981, 7, 11));
+        userStorage.create(user1);
+
+        User user2 = new User("Email2@mail.com", "Login2", "Name2", LocalDate.of(1985, 10, 15));
+        userStorage.create(user2);
+
+        User user3 = new User("Email3@mail.com", "Login3", "Name3", LocalDate.of(1980, 11, 10));
+        userStorage.create(user3);
+
+        userService.addFriend(1,2);
+        userService.addFriend(1,3);
+
+        mockMvc.perform(get("/users/{userId}/friends", 1))
+
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+
+                // Validate the returned fields
+                .andExpect(jsonPath("$[0].id", is(2)))
+                .andExpect(jsonPath("$[0].email", is("Email2@mail.com")))
+                .andExpect(jsonPath("$[0].login", is("Login2")))
+                .andExpect(jsonPath("$[0].name", is("Name2")))
+                .andExpect(jsonPath("$[0].birthday", is("1985-10-15")))
+                .andExpect(jsonPath("$[1].id", is(3)))
+                .andExpect(jsonPath("$[1].email", is("Email3@mail.com")))
+                .andExpect(jsonPath("$[1].login", is("Login3")))
+                .andExpect(jsonPath("$[1].name", is("Name3")))
+                .andExpect(jsonPath("$[1].birthday", is("1980-11-10")));
+    }
+
+    @Test
+    @DisplayName("GET /users/{userId}/friends Получаю список друзей нет User")
+    void getUserFriendsListNoUser() throws Exception {
+
+        mockMvc.perform(get("/users/{userId}/friends", 4))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("GET /users/{userId}/friends/common/{otherId} Получаю список общих друзей")
+    void getCommonFriendsList() throws Exception {
+
+        User user1 = new User("Email1@mail.com", "Login1", "Name1", LocalDate.of(1981, 7, 11));
+        userStorage.create(user1);
+
+        User user2 = new User("Email2@mail.com", "Login2", "Name2", LocalDate.of(1985, 10, 15));
+        userStorage.create(user2);
+
+        User user3 = new User("Email3@mail.com", "Login3", "Name3", LocalDate.of(1980, 11, 10));
+        userStorage.create(user3);
+
+        userService.addFriend(1,2);
+        userService.addFriend(3,2);
+
+        mockMvc.perform(get("/users/{userId}/friends/common/{otherId}", 1,3))
+
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+
+                // Validate the returned fields
+                .andExpect(jsonPath("$[0].id", is(2)))
+                .andExpect(jsonPath("$[0].email", is("Email2@mail.com")))
+                .andExpect(jsonPath("$[0].login", is("Login2")))
+                .andExpect(jsonPath("$[0].name", is("Name2")))
+                .andExpect(jsonPath("$[0].birthday", is("1985-10-15")));
+    }
+
+    @Test
+    @DisplayName("GET /users/{userId}/friends/common/{otherId} Получаю список общих друзей но их нет")
+    void getCommonFriendsListNoCommons() throws Exception {
+
+        User user1 = new User("Email1@mail.com", "Login1", "Name1", LocalDate.of(1981, 7, 11));
+        userStorage.create(user1);
+
+        User user2 = new User("Email2@mail.com", "Login2", "Name2", LocalDate.of(1985, 10, 15));
+        userStorage.create(user2);
+
+        User user3 = new User("Email3@mail.com", "Login3", "Name3", LocalDate.of(1980, 11, 10));
+        userStorage.create(user3);
+
+        userService.addFriend(1,3);
+
+        mockMvc.perform(get("/users/{userId}/friends/common/{otherId}", 1,2))
+
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("DELETE /users/{userId}/friends/{friendId} удаляяю друга")
+    void deleteFriendSuccess () throws Exception {
+
+        User user1 = new User("Email1@mail.com", "Login1", "Name1", LocalDate.of(1981, 7, 11));
+        userStorage.create(user1);
+
+        User user2 = new User("Email2@mail.com", "Login2", "Name2", LocalDate.of(1985, 10, 15));
+        userStorage.create(user2);
+
+        User user3 = new User("Email3@mail.com", "Login3", "Name3", LocalDate.of(1980, 11, 10));
+        userStorage.create(user3);
+
+        userService.addFriend(1,2);
+        userService.addFriend(1,3);
+
+        mockMvc.perform(delete("/users/{userId}/friends/{friendId}", 1,3))
+                // Validate the response code
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("DELETE /users/{userId}/friends/{friendId} удаляяю несуществующего друга")
+    void deleteFriendNotFound () throws Exception {
+
+        User user1 = new User("Email1@mail.com", "Login1", "Name1", LocalDate.of(1981, 7, 11));
+        userStorage.create(user1);
+
+        User user2 = new User("Email2@mail.com", "Login2", "Name2", LocalDate.of(1985, 10, 15));
+        userStorage.create(user2);
+
+        User user3 = new User("Email3@mail.com", "Login3", "Name3", LocalDate.of(1980, 11, 10));
+        userStorage.create(user3);
+
+        userService.addFriend(1,3);
+
+        mockMvc.perform(delete("/users/{userId}/friends/{friendId}", 1,2))
+                // Validate the response code
+                .andExpect(status().isInternalServerError());
     }
 }
