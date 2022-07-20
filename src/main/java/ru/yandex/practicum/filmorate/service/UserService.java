@@ -1,54 +1,66 @@
 package ru.yandex.practicum.filmorate.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+
 
 @Service
-public class UserService implements UserServiceInterface {
+public class UserService implements IUserService {
 
-    private static final Map<Integer, User> USERS_MAP = new HashMap<>();
-    private static final AtomicInteger CLIENT_ID_HOLDER = new AtomicInteger();
+    @Autowired
+    UserStorage userStorage;
 
     @Override
-    public User create(User user) {
-        final int userId = CLIENT_ID_HOLDER.incrementAndGet();
-        user.setId(userId);
-        if (user.getName().isBlank()) {
-            user.setName(user.getLogin());
+    public boolean addFriend(int userId, int friendId) {
+        if (userStorage.read(userId) == null || userStorage.read(friendId) == null) {
+            return false;
         }
-        USERS_MAP.put(userId, user);
-        return user;
+        return userStorage.read(userId).getFriends().add(friendId) &&
+                userStorage.read(friendId).getFriends().add(userId);
+
     }
 
     @Override
-    public List<User> readAll() {
-        return new ArrayList<>(USERS_MAP.values());
-    }
+    public List<User> readAllFriends(int userId) {
 
-    @Override
-    public User read(int id) {
-        return USERS_MAP.get(id);
-    }
-
-    @Override
-    public boolean update(User user) {
-
-        if (user.getId() != null && USERS_MAP.containsKey(user.getId())) {
-            USERS_MAP.put(user.getId(), user);
-            return true;
+        if (userStorage.read(userId) == null) {
+            return null;
         }
 
-        return false;
+        return userStorage.read(userId).getFriends().stream()
+                .map(id -> userStorage.read(id))
+                .collect(Collectors.toList());
+
     }
 
     @Override
-    public boolean delete(int id) {
-        return USERS_MAP.remove(id) != null;
+    public boolean deleteFriend(int userId, int friendId) {
+
+        if (userStorage.read(userId) == null || userStorage.read(friendId) == null) {
+            return false;
+        }
+
+        return userStorage.read(userId).getFriends().remove(friendId) &&
+                userStorage.read(friendId).getFriends().remove(userId);
     }
+
+    @Override
+    public List<User> findCommonFriends(int userId, int otherId) {
+
+        List<Integer> commonFriends = userStorage.read(userId).getFriends().stream()
+                .filter(element -> userStorage.read(otherId).getFriends().contains(element))
+                .collect(Collectors.toList());
+
+        return commonFriends.stream()
+                .map(id -> userStorage.read(id))
+                .collect(Collectors.toList());
+
+    }
+
+
 }
