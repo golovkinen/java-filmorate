@@ -6,9 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.service.UserServiceInterface;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.service.IUserService;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import javax.validation.Valid;
@@ -18,15 +16,18 @@ import java.util.Collection;
 @Slf4j
 @RequestMapping("/users")
 public class UserController {
-  @Autowired
-    UserService userService;
 
-  @Autowired
-    UserStorage userStorage;
+    private final IUserService iUserService;
+    private final UserStorage userStorage;
+    @Autowired
+    public UserController(IUserService iUserService, UserStorage userStorage) {
+        this.iUserService = iUserService;
+        this.userStorage = userStorage;
+    }
 
     @GetMapping
     public ResponseEntity<Collection<User>> readAll() {
-        final Collection <User> users = userStorage.readAll();
+        final Collection<User> users = userStorage.readAll();
         log.debug("Текущее количество пользователей: {}", users.size());
         return users != null && !users.isEmpty()
                 ? new ResponseEntity<>(users, HttpStatus.OK)
@@ -72,10 +73,10 @@ public class UserController {
     }
 
     @PutMapping(value = "/{userId}/friends/{friendId}")
-    public ResponseEntity<?> addFriend (@PathVariable int userId,
-                                        @PathVariable int friendId) {
+    public ResponseEntity<?> addFriend(@PathVariable int userId,
+                                       @PathVariable int friendId) {
 
-        final boolean updated = userService.addFriend(userId, friendId);
+        final boolean updated = iUserService.addFriend(userId, friendId);
 
         return updated
                 ? new ResponseEntity<>(HttpStatus.OK)
@@ -85,7 +86,7 @@ public class UserController {
     @GetMapping(value = "/{userId}/friends")
     public ResponseEntity<Collection<User>> readAllFriends(@PathVariable int userId) {
 
-        final Collection<User> friends = userService.readAllFriends(userId);
+        final Collection<User> friends = iUserService.readAllFriends(userId);
 
         return friends != null
                 ? new ResponseEntity<>(friends, HttpStatus.OK)
@@ -96,7 +97,7 @@ public class UserController {
     public ResponseEntity<Collection<User>> findCommonFriends(@PathVariable int userId,
                                                               @PathVariable int otherId) {
 
-        final Collection<User> commonFriends = userService.findCommonFriends(userId, otherId);
+        final Collection<User> commonFriends = iUserService.findCommonFriends(userId, otherId);
         log.debug("Текущее количество друзей: {}", commonFriends.size());
 
         return commonFriends != null
@@ -105,10 +106,10 @@ public class UserController {
     }
 
     @DeleteMapping(value = "/{userId}/friends/{friendId}")
-    public ResponseEntity<?> deleteFriend (@PathVariable int userId,
-                                           @PathVariable int friendId) {
+    public ResponseEntity<?> deleteFriend(@PathVariable int userId,
+                                          @PathVariable int friendId) {
 
-        final boolean deleted = userService.deleteFriend(userId, friendId);
+        final boolean deleted = iUserService.deleteFriend(userId, friendId);
 
         return deleted
                 ? new ResponseEntity<>(HttpStatus.OK)

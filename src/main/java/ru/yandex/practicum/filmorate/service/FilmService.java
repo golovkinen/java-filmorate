@@ -3,17 +3,14 @@ package ru.yandex.practicum.filmorate.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
-public class FilmService implements FilmServiceInterface {
+public class FilmService implements IFilmService {
 
     @Autowired
     public FilmStorage filmStorage;
@@ -35,10 +32,10 @@ public class FilmService implements FilmServiceInterface {
     @Override
     public List<Film> readTenBestFilms(int count) {
 
-       return filmStorage.readAll().stream()
-               .sorted((o1, o2) -> o2.getLikes().size() - o1.getLikes().size())
-               .limit(count)
-               .collect(Collectors.toList());
+        return filmStorage.readAll().stream()
+                .sorted((o1, o2) -> o2.getLikes().size() - o1.getLikes().size())
+                .limit(count)
+                .collect(Collectors.toList());
     }
 
     @Override

@@ -8,8 +8,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.util.Assert;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -35,7 +33,7 @@ public class UserControllerTest {
     UserService userService;
 
     @AfterEach
-    public void resetDB () {
+    public void resetDB() {
         userStorage.deleteAll();
     }
 
@@ -109,7 +107,7 @@ public class UserControllerTest {
 
     @Test
     @DisplayName("POST /users Если email - null")
-    void emailNullError () throws Exception {
+    void emailNullError() throws Exception {
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -121,7 +119,7 @@ public class UserControllerTest {
 
     @Test
     @DisplayName("POST /users Если email - поле не заполнено")
-    void emailBlankError () throws Exception {
+    void emailBlankError() throws Exception {
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -133,7 +131,7 @@ public class UserControllerTest {
 
     @Test
     @DisplayName("POST /users Если email - введен неверно")
-    void emailWrongError () throws Exception {
+    void emailWrongError() throws Exception {
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -291,8 +289,8 @@ public class UserControllerTest {
         User user3 = new User("Email3@mail.com", "Login3", "Name3", LocalDate.of(1980, 11, 10));
         userStorage.create(user3);
 
-        userService.addFriend(1,2);
-        userService.addFriend(1,3);
+        userService.addFriend(1, 2);
+        userService.addFriend(1, 3);
 
         mockMvc.perform(get("/users/{userId}/friends", 1))
 
@@ -333,10 +331,10 @@ public class UserControllerTest {
         User user3 = new User("Email3@mail.com", "Login3", "Name3", LocalDate.of(1980, 11, 10));
         userStorage.create(user3);
 
-        userService.addFriend(1,2);
-        userService.addFriend(3,2);
+        userService.addFriend(1, 2);
+        userService.addFriend(3, 2);
 
-        mockMvc.perform(get("/users/{userId}/friends/common/{otherId}", 1,3))
+        mockMvc.perform(get("/users/{userId}/friends/common/{otherId}", 1, 3))
 
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -362,16 +360,16 @@ public class UserControllerTest {
         User user3 = new User("Email3@mail.com", "Login3", "Name3", LocalDate.of(1980, 11, 10));
         userStorage.create(user3);
 
-        userService.addFriend(1,3);
+        userService.addFriend(1, 3);
 
-        mockMvc.perform(get("/users/{userId}/friends/common/{otherId}", 1,2))
+        mockMvc.perform(get("/users/{userId}/friends/common/{otherId}", 1, 2))
 
                 .andExpect(status().isOk());
     }
 
     @Test
     @DisplayName("DELETE /users/{userId}/friends/{friendId} удаляяю друга")
-    void deleteFriendSuccess () throws Exception {
+    void deleteFriendSuccess() throws Exception {
 
         User user1 = new User("Email1@mail.com", "Login1", "Name1", LocalDate.of(1981, 7, 11));
         userStorage.create(user1);
@@ -382,17 +380,17 @@ public class UserControllerTest {
         User user3 = new User("Email3@mail.com", "Login3", "Name3", LocalDate.of(1980, 11, 10));
         userStorage.create(user3);
 
-        userService.addFriend(1,2);
-        userService.addFriend(1,3);
+        userService.addFriend(1, 2);
+        userService.addFriend(1, 3);
 
-        mockMvc.perform(delete("/users/{userId}/friends/{friendId}", 1,3))
+        mockMvc.perform(delete("/users/{userId}/friends/{friendId}", 1, 3))
                 // Validate the response code
                 .andExpect(status().isOk());
     }
 
     @Test
     @DisplayName("DELETE /users/{userId}/friends/{friendId} удаляяю несуществующего друга")
-    void deleteFriendNotFound () throws Exception {
+    void deleteFriendNotFound() throws Exception {
 
         User user1 = new User("Email1@mail.com", "Login1", "Name1", LocalDate.of(1981, 7, 11));
         userStorage.create(user1);
@@ -403,9 +401,9 @@ public class UserControllerTest {
         User user3 = new User("Email3@mail.com", "Login3", "Name3", LocalDate.of(1980, 11, 10));
         userStorage.create(user3);
 
-        userService.addFriend(1,3);
+        userService.addFriend(1, 3);
 
-        mockMvc.perform(delete("/users/{userId}/friends/{friendId}", 1,2))
+        mockMvc.perform(delete("/users/{userId}/friends/{friendId}", 1, 2))
                 // Validate the response code
                 .andExpect(status().isInternalServerError());
     }

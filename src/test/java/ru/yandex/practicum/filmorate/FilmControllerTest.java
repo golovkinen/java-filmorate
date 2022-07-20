@@ -39,7 +39,7 @@ public class FilmControllerTest {
     FilmService filmService;
 
     @AfterEach
-    public void resetDB () {
+    public void resetDB() {
         filmStorage.deleteAll();
         userStorage.deleteAll();
     }
@@ -138,7 +138,7 @@ public class FilmControllerTest {
 
     @Test
     @DisplayName("POST /films Если продолжительность - null")
-    void filmDurationNullError () throws Exception {
+    void filmDurationNullError() throws Exception {
 
         mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -150,7 +150,7 @@ public class FilmControllerTest {
 
     @Test
     @DisplayName("POST /films Если продолжительность - отрицательная")
-    void filmDurationBelowZeroError () throws Exception {
+    void filmDurationBelowZeroError() throws Exception {
 
         mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -162,7 +162,7 @@ public class FilmControllerTest {
 
     @Test
     @DisplayName("PUT /films/{filmId}/like/{userId} Ставим Лайк фильму")
-    void filmLikedByUserSuccess () throws Exception {
+    void filmLikedByUserSuccess() throws Exception {
 
         User user1 = new User("Email1@mail.com", "Login1", "Name1", LocalDate.of(1981, 7, 11));
         userStorage.create(user1);
@@ -170,7 +170,7 @@ public class FilmControllerTest {
         Film film1 = new Film("name1", "description1", LocalDate.of(1999, 10, 11), 123);
         filmStorage.create(film1);
 
-        mockMvc.perform(put("/films/{filmId}/like/{userId}", 1,1))
+        mockMvc.perform(put("/films/{filmId}/like/{userId}", 1, 1))
 
                 // Validate the response code and content type
                 .andExpect(status().isOk());
@@ -178,12 +178,12 @@ public class FilmControllerTest {
 
     @Test
     @DisplayName("PUT /films/{filmId}/like/{userId} Ставим Лайк фильму Юзером которого нет")
-    void filmLikedByUserNotInMapError () throws Exception {
+    void filmLikedByUserNotInMapError() throws Exception {
 
         Film film1 = new Film("name1", "description1", LocalDate.of(1999, 10, 11), 123);
         filmStorage.create(film1);
 
-        mockMvc.perform(put("/films/{filmId}/like/{userId}", 1,1))
+        mockMvc.perform(put("/films/{filmId}/like/{userId}", 1, 1))
 
                 // Validate the response code and content type
                 .andExpect(status().isNotFound());
@@ -191,7 +191,7 @@ public class FilmControllerTest {
 
     @Test
     @DisplayName("PUT /films/{filmId}/like/{userId} Ставим Лайк фильму которого нет")
-    void filmNotInMapLikedByUserError () throws Exception {
+    void filmNotInMapLikedByUserError() throws Exception {
 
         User user1 = new User("Email1@mail.com", "Login1", "Name1", LocalDate.of(1981, 7, 11));
         userStorage.create(user1);
@@ -199,7 +199,7 @@ public class FilmControllerTest {
         Film film1 = new Film("name1", "description1", LocalDate.of(1999, 10, 11), 123);
         filmStorage.create(film1);
 
-        mockMvc.perform(put("/films/{filmId}/like/{userId}", 2,1))
+        mockMvc.perform(put("/films/{filmId}/like/{userId}", 2, 1))
 
                 // Validate the response code and content type
                 .andExpect(status().isNotFound());
@@ -207,7 +207,7 @@ public class FilmControllerTest {
 
     @Test
     @DisplayName("GET /films/popular?count={count} Получаем TOP 3 фильмов")
-    void getTopTenSuccess () throws Exception {
+    void getTopTenSuccess() throws Exception {
 
         User user1 = new User("Email1@mail.com", "Login1", "Name1", LocalDate.of(1981, 7, 11));
         userStorage.create(user1);
@@ -227,18 +227,18 @@ public class FilmControllerTest {
         Film film3 = new Film("name3", "description3", LocalDate.of(1999, 10, 11), 123);
         filmStorage.create(film3);
 
-        Film film4= new Film("name4", "description4", LocalDate.of(1999, 10, 11), 123);
+        Film film4 = new Film("name4", "description4", LocalDate.of(1999, 10, 11), 123);
         filmStorage.create(film4);
 
         Film film5 = new Film("name5", "description5", LocalDate.of(1999, 10, 11), 123);
         filmStorage.create(film5);
 
-        filmService.addLike(1,1);
-        filmService.addLike(1,2);
-        filmService.addLike(5,3);
-        filmService.addLike(4,1);
-        filmService.addLike(4,2);
-        filmService.addLike(4,3);
+        filmService.addLike(1, 1);
+        filmService.addLike(1, 2);
+        filmService.addLike(5, 3);
+        filmService.addLike(4, 1);
+        filmService.addLike(4, 2);
+        filmService.addLike(4, 3);
 
         mockMvc.perform(get("/films/popular?count={count}", 3))
 
@@ -252,7 +252,7 @@ public class FilmControllerTest {
 
     @Test
     @DisplayName("GET /films/popular?count=1 Получаем TOP 1, фильм один, нет лайков")
-    void getTopTenOneFilmNoLikeSuccess () throws Exception {
+    void getTopTenOneFilmNoLikeSuccess() throws Exception {
 
         Film film1 = new Film("name1", "description1", LocalDate.of(1999, 10, 11), 123);
         filmStorage.create(film1);
@@ -267,7 +267,7 @@ public class FilmControllerTest {
 
     @Test
     @DisplayName("GET /films/popular Получаем TOP фильмов без параметров")
-    void getTopTenNoParamsSuccess () throws Exception {
+    void getTopTenNoParamsSuccess() throws Exception {
 
         User user1 = new User("Email1@mail.com", "Login1", "Name1", LocalDate.of(1981, 7, 11));
         userStorage.create(user1);
@@ -287,7 +287,7 @@ public class FilmControllerTest {
         Film film3 = new Film("name3", "description3", LocalDate.of(1999, 10, 11), 123);
         filmStorage.create(film3);
 
-        Film film4= new Film("name4", "description4", LocalDate.of(1999, 10, 11), 123);
+        Film film4 = new Film("name4", "description4", LocalDate.of(1999, 10, 11), 123);
         filmStorage.create(film4);
 
         Film film5 = new Film("name5", "description5", LocalDate.of(1999, 10, 11), 123);
@@ -308,12 +308,12 @@ public class FilmControllerTest {
         Film film10 = new Film("name10", "description10", LocalDate.of(1999, 10, 11), 123);
         filmStorage.create(film10);
 
-        filmService.addLike(1,1);
-        filmService.addLike(1,2);
-        filmService.addLike(5,3);
-        filmService.addLike(4,1);
-        filmService.addLike(4,2);
-        filmService.addLike(4,3);
+        filmService.addLike(1, 1);
+        filmService.addLike(1, 2);
+        filmService.addLike(5, 3);
+        filmService.addLike(4, 1);
+        filmService.addLike(4, 2);
+        filmService.addLike(4, 3);
 
         mockMvc.perform(get("/films/popular"))
 
@@ -334,7 +334,7 @@ public class FilmControllerTest {
 
     @Test
     @DisplayName("GET /films/popular?count={count} Получаем TOP 10 - нет фильмов")
-    void getTopTenNoFilmsError () throws Exception {
+    void getTopTenNoFilmsError() throws Exception {
 
         mockMvc.perform(get("/films/popular?count={count}", 10))
 
@@ -345,7 +345,7 @@ public class FilmControllerTest {
 
     @Test
     @DisplayName("GET /films/popular?count={count} Получаем TOP фильмов параметр 0")
-    void getTopTenParamsZeroSuccess () throws Exception {
+    void getTopTenParamsZeroSuccess() throws Exception {
 
         User user1 = new User("Email1@mail.com", "Login1", "Name1", LocalDate.of(1981, 7, 11));
         userStorage.create(user1);
@@ -365,18 +365,18 @@ public class FilmControllerTest {
         Film film3 = new Film("name3", "description3", LocalDate.of(1999, 10, 11), 123);
         filmStorage.create(film3);
 
-        Film film4= new Film("name4", "description4", LocalDate.of(1999, 10, 11), 123);
+        Film film4 = new Film("name4", "description4", LocalDate.of(1999, 10, 11), 123);
         filmStorage.create(film4);
 
         Film film5 = new Film("name5", "description5", LocalDate.of(1999, 10, 11), 123);
         filmStorage.create(film5);
 
-        filmService.addLike(1,1);
-        filmService.addLike(1,2);
-        filmService.addLike(5,3);
-        filmService.addLike(4,1);
-        filmService.addLike(4,2);
-        filmService.addLike(4,3);
+        filmService.addLike(1, 1);
+        filmService.addLike(1, 2);
+        filmService.addLike(5, 3);
+        filmService.addLike(4, 1);
+        filmService.addLike(4, 2);
+        filmService.addLike(4, 3);
 
         mockMvc.perform(get("/films/popular?count={count}", 0))
 
@@ -392,7 +392,7 @@ public class FilmControllerTest {
 
     @Test
     @DisplayName("GET /films/popular?count={count} Получаем TOP фильмов параметр отрицательный")
-    void getTopTenParamsMinusSuccess () throws Exception {
+    void getTopTenParamsMinusSuccess() throws Exception {
 
         User user1 = new User("Email1@mail.com", "Login1", "Name1", LocalDate.of(1981, 7, 11));
         userStorage.create(user1);
@@ -412,18 +412,18 @@ public class FilmControllerTest {
         Film film3 = new Film("name3", "description3", LocalDate.of(1999, 10, 11), 123);
         filmStorage.create(film3);
 
-        Film film4= new Film("name4", "description4", LocalDate.of(1999, 10, 11), 123);
+        Film film4 = new Film("name4", "description4", LocalDate.of(1999, 10, 11), 123);
         filmStorage.create(film4);
 
         Film film5 = new Film("name5", "description5", LocalDate.of(1999, 10, 11), 123);
         filmStorage.create(film5);
 
-        filmService.addLike(1,1);
-        filmService.addLike(1,2);
-        filmService.addLike(5,3);
-        filmService.addLike(4,1);
-        filmService.addLike(4,2);
-        filmService.addLike(4,3);
+        filmService.addLike(1, 1);
+        filmService.addLike(1, 2);
+        filmService.addLike(5, 3);
+        filmService.addLike(4, 1);
+        filmService.addLike(4, 2);
+        filmService.addLike(4, 3);
 
         mockMvc.perform(get("/films/popular?count={count}", -5))
 
@@ -439,7 +439,7 @@ public class FilmControllerTest {
 
     @Test
     @DisplayName("DELETE /films/{filmId}/like/{userId} Удаляем Лайк")
-    void deleteLikeSuccess () throws Exception {
+    void deleteLikeSuccess() throws Exception {
 
         User user1 = new User("Email1@mail.com", "Login1", "Name1", LocalDate.of(1981, 7, 11));
         userStorage.create(user1);
@@ -447,9 +447,9 @@ public class FilmControllerTest {
         Film film1 = new Film("name1", "description1", LocalDate.of(1999, 10, 11), 123);
         filmStorage.create(film1);
 
-        filmService.addLike(1,1);
+        filmService.addLike(1, 1);
 
-        mockMvc.perform(delete("/films/{filmId}/like/{userId}", 1,1))
+        mockMvc.perform(delete("/films/{filmId}/like/{userId}", 1, 1))
 
                 // Validate the response code and content type
                 .andExpect(status().isOk());
@@ -458,7 +458,7 @@ public class FilmControllerTest {
 
     @Test
     @DisplayName("DELETE /films/{filmId}/like/{userId} Удаляем Лайк")
-    void deleteLikeNoLikeError () throws Exception {
+    void deleteLikeNoLikeError() throws Exception {
 
         User user1 = new User("Email1@mail.com", "Login1", "Name1", LocalDate.of(1981, 7, 11));
         userStorage.create(user1);
@@ -466,7 +466,7 @@ public class FilmControllerTest {
         Film film1 = new Film("name1", "description1", LocalDate.of(1999, 10, 11), 123);
         filmStorage.create(film1);
 
-        mockMvc.perform(delete("/films/{filmId}/like/{userId}", 1,1))
+        mockMvc.perform(delete("/films/{filmId}/like/{userId}", 1, 1))
 
                 // Validate the response code and content type
                 .andExpect(status().isNotFound());
@@ -475,7 +475,7 @@ public class FilmControllerTest {
 
     @Test
     @DisplayName("DELETE /films/{filmId}/like/{userId} Удаляем Лайк")
-    void deleteLikeNoUserLikeError () throws Exception {
+    void deleteLikeNoUserLikeError() throws Exception {
 
         User user1 = new User("Email1@mail.com", "Login1", "Name1", LocalDate.of(1981, 7, 11));
         userStorage.create(user1);
@@ -489,10 +489,10 @@ public class FilmControllerTest {
         Film film1 = new Film("name1", "description1", LocalDate.of(1999, 10, 11), 123);
         filmStorage.create(film1);
 
-        filmService.addLike(1,1);
-        filmService.addLike(3,1);
+        filmService.addLike(1, 1);
+        filmService.addLike(3, 1);
 
-        mockMvc.perform(delete("/films/{filmId}/like/{userId}", 1,2))
+        mockMvc.perform(delete("/films/{filmId}/like/{userId}", 1, 2))
 
                 // Validate the response code and content type
                 .andExpect(status().isNotFound());
@@ -500,7 +500,7 @@ public class FilmControllerTest {
 
     @Test
     @DisplayName("DELETE /films/{filmId}/like/{userId} Удаляем Лайк")
-    void deleteLikeNoFilmError () throws Exception {
+    void deleteLikeNoFilmError() throws Exception {
 
         User user1 = new User("Email1@mail.com", "Login1", "Name1", LocalDate.of(1981, 7, 11));
         userStorage.create(user1);
@@ -509,9 +509,9 @@ public class FilmControllerTest {
         Film film1 = new Film("name1", "description1", LocalDate.of(1999, 10, 11), 123);
         filmStorage.create(film1);
 
-        filmService.addLike(1,1);
+        filmService.addLike(1, 1);
 
-        mockMvc.perform(delete("/films/{filmId}/like/{userId}", 2,1))
+        mockMvc.perform(delete("/films/{filmId}/like/{userId}", 2, 1))
 
                 // Validate the response code and content type
                 .andExpect(status().isNotFound());
@@ -519,7 +519,7 @@ public class FilmControllerTest {
 
     @Test
     @DisplayName("DELETE /films/{filmId}/like/{userId} Удаляем Лайк")
-    void deleteLikeUserIdMinusError () throws Exception {
+    void deleteLikeUserIdMinusError() throws Exception {
 
         User user1 = new User("Email1@mail.com", "Login1", "Name1", LocalDate.of(1981, 7, 11));
         userStorage.create(user1);
@@ -528,9 +528,9 @@ public class FilmControllerTest {
         Film film1 = new Film("name1", "description1", LocalDate.of(1999, 10, 11), 123);
         filmStorage.create(film1);
 
-        filmService.addLike(1,1);
+        filmService.addLike(1, 1);
 
-        mockMvc.perform(delete("/films/{filmId}/like/{userId}", 1,-2))
+        mockMvc.perform(delete("/films/{filmId}/like/{userId}", 1, -2))
 
                 // Validate the response code and content type
                 .andExpect(status().isNotFound());

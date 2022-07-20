@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
-public class InMemoryUserStorage implements UserStorage{
+public class InMemoryUserStorage implements UserStorage {
     private static final Map<Integer, User> USERS_MAP = new HashMap<>();
     private static final AtomicInteger CLIENT_ID_HOLDER = new AtomicInteger();
 

@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.IFilmService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import javax.validation.Valid;
@@ -17,15 +17,17 @@ import java.util.Collection;
 @RequestMapping("/films")
 public class FilmController {
 
+    private final FilmStorage filmStorage;
+    private final IFilmService iFilmService;
     @Autowired
-    FilmStorage filmStorage;
-
-    @Autowired
-    FilmService filmService;
+    public FilmController(FilmStorage filmStorage, IFilmService iFilmService) {
+        this.filmStorage = filmStorage;
+        this.iFilmService = iFilmService;
+    }
 
     @GetMapping
     public ResponseEntity<Collection<Film>> readAllFilms() {
-        final Collection <Film> films = filmStorage.readAll();
+        final Collection<Film> films = filmStorage.readAll();
         log.debug("Текущее количество пользователей: {}", films.size());
         return films != null
                 ? new ResponseEntity<>(films, HttpStatus.OK)
@@ -33,7 +35,7 @@ public class FilmController {
     }
 
     @GetMapping(value = "/{id}")
-    public ResponseEntity<Film> read (@PathVariable(name = "id") int id) {
+    public ResponseEntity<Film> read(@PathVariable(name = "id") int id) {
         final Film film = filmStorage.read(id);
 
         return film != null
@@ -72,10 +74,10 @@ public class FilmController {
     }
 
     @PutMapping(value = "/{filmId}/like/{userId}")
-    public ResponseEntity<?> addLike (@PathVariable int filmId,
-                                        @PathVariable int userId) {
+    public ResponseEntity<?> addLike(@PathVariable int filmId,
+                                     @PathVariable int userId) {
 
-            final boolean liked = filmService.addLike(filmId, userId);
+        final boolean liked = iFilmService.addLike(filmId, userId);
 
         return liked
                 ? new ResponseEntity<>(HttpStatus.OK)
@@ -89,7 +91,7 @@ public class FilmController {
             count = 10;
         }
 
-        final Collection <Film> topTenFilms = filmService.readTenBestFilms(count);
+        final Collection<Film> topTenFilms = iFilmService.readTenBestFilms(count);
 
         return topTenFilms != null
                 ? new ResponseEntity<>(topTenFilms, HttpStatus.OK)
@@ -97,10 +99,10 @@ public class FilmController {
     }
 
     @DeleteMapping(value = "/{filmId}/like/{userId}")
-    public ResponseEntity<?> deleteLike (@PathVariable int filmId,
-                                           @PathVariable int userId) {
+    public ResponseEntity<?> deleteLike(@PathVariable int filmId,
+                                        @PathVariable int userId) {
 
-        final boolean deleted = filmService.deleteLike(filmId, userId);
+        final boolean deleted = iFilmService.deleteLike(filmId, userId);
 
         return deleted
                 ? new ResponseEntity<>(HttpStatus.OK)

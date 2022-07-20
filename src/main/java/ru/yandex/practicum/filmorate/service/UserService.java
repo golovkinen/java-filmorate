@@ -10,36 +10,36 @@ import java.util.stream.Collectors;
 
 
 @Service
-public class UserService implements UserServiceInterface {
+public class UserService implements IUserService {
 
     @Autowired
     UserStorage userStorage;
 
     @Override
-    public boolean addFriend (int userId, int friendId) {
+    public boolean addFriend(int userId, int friendId) {
         if (userStorage.read(userId) == null || userStorage.read(friendId) == null) {
             return false;
         }
         return userStorage.read(userId).getFriends().add(friendId) &&
-        userStorage.read(friendId).getFriends().add(userId);
+                userStorage.read(friendId).getFriends().add(userId);
 
     }
 
     @Override
-    public List<User> readAllFriends (int userId) {
+    public List<User> readAllFriends(int userId) {
 
         if (userStorage.read(userId) == null) {
             return null;
         }
 
-      return userStorage.read(userId).getFriends().stream()
+        return userStorage.read(userId).getFriends().stream()
                 .map(id -> userStorage.read(id))
                 .collect(Collectors.toList());
 
     }
 
     @Override
-    public boolean deleteFriend (int userId, int friendId) {
+    public boolean deleteFriend(int userId, int friendId) {
 
         if (userStorage.read(userId) == null || userStorage.read(friendId) == null) {
             return false;
