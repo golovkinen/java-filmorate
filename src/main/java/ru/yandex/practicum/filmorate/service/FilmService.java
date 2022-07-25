@@ -1,49 +1,51 @@
 package ru.yandex.practicum.filmorate.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
-public class FilmService implements FilmServiceInterface {
+public class FilmService implements IFilmService {
 
-    private static final Map<Integer, Film> FILMS_MAP = new HashMap<>();
-    private static final AtomicInteger FILM_ID_HOLDER = new AtomicInteger();
+    @Autowired
+    public FilmStorage filmStorage;
 
-    @Override
-    public Film create(Film film) {
-        final int filmId = FILM_ID_HOLDER.incrementAndGet();
-        film.setId(filmId);
-        FILMS_MAP.put(filmId, film);
-        return film;
-    }
+    @Autowired
+    public UserStorage userStorage;
+
 
     @Override
-    public List<Film> readAll() {
-        return new ArrayList<>(FILMS_MAP.values());
-    }
+    public boolean addLike(int filmId, int userId) {
 
-    @Override
-    public Film read(int id) {
-        return FILMS_MAP.get(id);
-    }
-
-    @Override
-    public boolean update(Film film) {
-        if (film.getId() != null && FILMS_MAP.containsKey(film.getId())) {
-            FILMS_MAP.put(film.getId(), film);
-            return true;
+        if (userStorage.read(userId) == null || filmStorage.read(filmId) == null) {
+            return false;
         }
-        return false;
+
+        return filmStorage.read(filmId).getLikes().add(userId);
     }
 
     @Override
-    public boolean delete(int id) {
-        return FILMS_MAP.remove(id) != null;
+    public List<Film> readTenBestFilms(int count) {
+
+        return filmStorage.readAll().stream()
+                .sorted((o1, o2) -> o2.getLikes().size() - o1.getLikes().size())
+                .limit(count)
+                .collect(Collectors.toList());
     }
+
+    @Override
+    public boolean deleteLike(int filmId, int userId) {
+
+        if (userStorage.read(userId) == null || filmStorage.read(filmId) == null) {
+            return false;
+        }
+
+        return filmStorage.read(filmId).getLikes().remove(userId);
+    }
+
 }
