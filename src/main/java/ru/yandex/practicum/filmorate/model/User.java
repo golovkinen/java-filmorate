@@ -1,16 +1,15 @@
 package ru.yandex.practicum.filmorate.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Data;
-import lombok.NonNull;
+import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+
 
 @Data
+@Builder
 
 public class User {
 
@@ -29,6 +28,4 @@ public class User {
     @DateTimeFormat(pattern = "yyyy-mm-dd")
     @NonNull
     private LocalDate birthday;
-    @JsonIgnore
-    private Set<Integer> friends = new HashSet<>();
 }
