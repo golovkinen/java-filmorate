@@ -1,15 +1,14 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MPA;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class MPARepository implements IMPARepository {
@@ -21,13 +20,13 @@ public class MPARepository implements IMPARepository {
     }
 
     @Override
-    public MPA read(int id) {
+    public Optional<MPA> read(int id) {
         try {
             String sqlQuery = "SELECT * FROM MPA WHERE MPA_ID = ?";
-            return jdbcTemplate.queryForObject(sqlQuery, this::mapRowToMPA, id);
+            return Optional.of(jdbcTemplate.queryForObject(sqlQuery, this::mapRowToMPA, id));
         }
         catch (EmptyResultDataAccessException e) {
-            return null;
+            return Optional.empty();
         }
     }
 

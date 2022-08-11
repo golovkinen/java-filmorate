@@ -12,6 +12,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class UserRepository implements UserStorage{
@@ -56,22 +57,22 @@ public class UserRepository implements UserStorage{
     }
 
     @Override
-    public User read(int id) {
+    public Optional<User> read(int id) {
 
         try {
             String sqlQuery = "select * from USERS WHERE USER_ID = ?";
-            return jdbcTemplate.queryForObject(sqlQuery, UserRepository::mapRowToUser, id);
+            return Optional.of(jdbcTemplate.queryForObject(sqlQuery, UserRepository::mapRowToUser, id));
         }
         catch (EmptyResultDataAccessException e) {
 
-            return null;
+            return Optional.empty();
         }
     }
 
     @Override
     public boolean update(User user) {
 
-        if (user.getId() != null || read(user.getId()) != null) {
+        if (user.getId() != null || read(user.getId()).isEmpty()) {
 
             String sqlQuery = "update USERS set " +
                     "USER_NAME = ?, USER_EMAIL = ?, USER_LOGIN = ?, " +

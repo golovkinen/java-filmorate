@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -28,7 +27,7 @@ public class DBFilmService implements IFilmService{
     @Override
     public boolean addLike(int filmId, int userId) {
 
-        if (userStorage.read(userId) == null || filmStorage.read(filmId) == null) {
+        if (userStorage.read(userId).isEmpty() || filmStorage.read(filmId).isEmpty()) {
             return false;
         }
 
@@ -41,8 +40,6 @@ public class DBFilmService implements IFilmService{
 
     @Override
     public List<Film> readTenBestFilms(int count) {
-
-       // String sqlQuery = "SELECT f.* FROM FILMS f, FILM_LIKES fl WHERE f.FILM_ID = fl.FILM_ID GROUP BY fl.FILM_ID ORDER BY COUNT(fl.FILM_ID) DESC LIMIT ?";
 
         String sqlQuery = "SELECT f.* FROM FILMS f LEFT JOIN FILM_LIKES fl ON f.FILM_ID = fl.FILM_ID GROUP BY f.FILM_ID ORDER BY COUNT(fl.FILM_ID) DESC LIMIT ?";
 
@@ -59,7 +56,7 @@ public class DBFilmService implements IFilmService{
     @Override
     public boolean deleteLike(int filmId, int userId) {
 
-        if (userStorage.read(userId) == null || filmStorage.read(filmId) == null) {
+        if (userStorage.read(userId).isEmpty() || filmStorage.read(filmId).isEmpty()) {
             return false;
         }
 

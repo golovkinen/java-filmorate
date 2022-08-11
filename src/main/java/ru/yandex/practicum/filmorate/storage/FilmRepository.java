@@ -1,22 +1,17 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository
@@ -30,15 +25,15 @@ public class FilmRepository implements FilmStorage {
 
     public FilmRepository(JdbcTemplate jdbcTemplate, IGenreRepository iGenreRepository, IMPARepository impaRepository) {
         this.jdbcTemplate = jdbcTemplate;
-        this.iGenreRepository = iGenreRepository;
-        this.impaRepository = impaRepository;
+        FilmRepository.iGenreRepository = iGenreRepository;
+        FilmRepository.impaRepository = impaRepository;
     }
 
     @Override
     public Film create(Film film) {
 
         if (film.getMpa().getName() == null) {
-            film.setMpa(impaRepository.read(film.getMpa().getId()));
+            film.setMpa(impaRepository.read(film.getMpa().getId()).get());
         }
 
         String sqlQuery = "insert into FILMS (FILM_NAME, FILM_DESCRIPTION," +
@@ -58,15 +53,12 @@ public class FilmRepository implements FilmStorage {
 
         film.setId(keyHolder.getKey().intValue());
 
-        List<Genre> filmGenres = new ArrayList<>();
-
         if (film.getGenres() == null) {
-            film.setGenres(filmGenres);
+            film.setGenres(new ArrayList<>());
         } else {
-            filmGenres = film.getGenres().stream()
-                    .map(e -> iGenreRepository.read(e.getId()))
-                    .collect(Collectors.toList());
-            film.setGenres(filmGenres);
+            film.setGenres(film.getGenres().stream()
+                    .map(e -> iGenreRepository.read(e.getId()).get())
+                    .collect(Collectors.toList()));
         }
 
         iGenreRepository.setFilmGenres(film);
@@ -84,33 +76,33 @@ public class FilmRepository implements FilmStorage {
     }
 
     @Override
-    public Film read(int id) {
+    public Optional<Film> read(int id) {
         String sqlQuery = "select * from FILMS WHERE FILM_ID = ?";
 
         try {
-            return jdbcTemplate.queryForObject(sqlQuery, FilmRepository::mapRowToFilm, id);
+            return Optional.of(jdbcTemplate.queryForObject(sqlQuery, FilmRepository::mapRowToFilm, id));
         } catch (EmptyResultDataAccessException e) {
-            return null;
+            return Optional.empty();
         }
     }
 
     @Override
     public boolean update(Film film) {
-        if (film.getId() != null && read(film.getId()) != null) {
+        if (film.getId() != null && read(film.getId()).isPresent()) {
 
             String sqlQuery = "update FILMS set " +
                     "FILM_NAME = ?, FILM_DESCRIPTION = ?, RELEASE_DATE = ?, " +
                     "FILM_DURATION = ?, FILM_MPA = ? where FILM_ID = ?";
 
             if (film.getMpa().getName() == null) {
-                film.setMpa(impaRepository.read(film.getMpa().getId()));
+                film.setMpa(impaRepository.read(film.getMpa().getId()).get());
             }
 
             if (film.getGenres() == null) {
                 film.setGenres(new ArrayList<>());
             } else {
                 film.setGenres(film.getGenres().stream()
-                        .map(e -> iGenreRepository.read(e.getId()))
+                        .map(e -> iGenreRepository.read(e.getId()).get())
                         .collect(Collectors.toList()));
             }
 
@@ -153,7 +145,7 @@ public class FilmRepository implements FilmStorage {
                 .releaseDate(resultSet.getDate("RELEASE_DATE").toLocalDate())
                 .duration(resultSet.getInt("FILM_DURATION"))
                 .genres(iGenreRepository.loadFilmGenres(resultSet.getInt("FILM_ID")))
-                .mpa(impaRepository.read(resultSet.getInt("FILM_MPA")))
+                .mpa(impaRepository.read(resultSet.getInt("FILM_MPA")).get())
                 .build();
     }
 }

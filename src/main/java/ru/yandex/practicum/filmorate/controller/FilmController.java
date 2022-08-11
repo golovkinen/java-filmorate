@@ -16,6 +16,7 @@ import ru.yandex.practicum.filmorate.storage.IMPARepository;
 
 import javax.validation.Valid;
 import java.util.Collection;
+import java.util.Optional;
 
 @RestController
 @Slf4j
@@ -47,10 +48,10 @@ public class FilmController {
 
     @GetMapping(value = "/films/{id}")
     public ResponseEntity<Film> read(@PathVariable(name = "id") int id) {
-        final Film film = filmStorage.read(id);
+        final Optional<Film> film = filmStorage.read(id);
 
-        return film != null
-                ? new ResponseEntity<>(film, HttpStatus.OK)
+        return !film.isEmpty()
+                ? new ResponseEntity<>(film.get(), HttpStatus.OK)
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
@@ -70,7 +71,7 @@ public class FilmController {
         final boolean updated = filmStorage.update(film);
         log.debug(String.valueOf(filmStorage.read(film.getId())));
         return updated
-                ? new ResponseEntity<>(filmStorage.read(film.getId()), HttpStatus.OK)
+                ? new ResponseEntity<>(filmStorage.read(film.getId()).get(), HttpStatus.OK)
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
@@ -133,10 +134,10 @@ public class FilmController {
     @GetMapping(value = "/genres/{genreId}")
     public ResponseEntity<?> readGenre(@PathVariable int genreId) {
 
-        final Genre genre = iGenreRepository.read(genreId);
+        final Optional<Genre> genre = iGenreRepository.read(genreId);
 
-        return genre != null
-                ? new ResponseEntity<>(genre, HttpStatus.OK)
+        return !genre.isEmpty()
+                ? new ResponseEntity<>(genre.get(), HttpStatus.OK)
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
@@ -153,10 +154,10 @@ public class FilmController {
     @GetMapping(value = "/mpa/{mpaId}")
     public ResponseEntity<?> readMPA(@PathVariable int mpaId) {
 
-        final MPA mpa = impaRepository.read(mpaId);
+        final Optional<MPA> mpa = impaRepository.read(mpaId);
 
-        return mpa != null
-                ? new ResponseEntity<>(mpa, HttpStatus.OK)
+        return !mpa.isEmpty()
+                ? new ResponseEntity<>(mpa.get(), HttpStatus.OK)
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 }

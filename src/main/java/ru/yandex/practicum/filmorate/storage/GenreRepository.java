@@ -27,11 +27,11 @@ public class GenreRepository implements IGenreRepository {
     }
 
     @Override
-    public Genre read(int id) {
+    public Optional<Genre> read(int id) {
         try {
-            return jdbcTemplate.queryForObject("SELECT * FROM GENRES WHERE GENRE_ID = ?", this::mapRowToGenre, id);
+            return Optional.of(jdbcTemplate.queryForObject("SELECT * FROM GENRES WHERE GENRE_ID = ?", this::mapRowToGenre, id));
         } catch (EmptyResultDataAccessException e) {
-            return null;
+            return Optional.empty();
         }
     }
 
@@ -44,7 +44,7 @@ public class GenreRepository implements IGenreRepository {
         if (!film.getGenres().isEmpty()) {
 
             for (Integer genreId : film.getGenres().stream()
-                    .map(e -> e.getId())
+                    .map(Genre::getId)
                     .collect(Collectors.toList())) {
                 jdbcTemplate.update(sqlQuery
                         , film.getId()

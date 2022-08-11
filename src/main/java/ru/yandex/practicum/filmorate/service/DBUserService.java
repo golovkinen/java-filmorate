@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
@@ -23,7 +22,7 @@ public class DBUserService implements IUserService{
     @Override
     public boolean addFriend(int userId, int friendId) {
 
-        if (userStorage.read(userId) == null || userStorage.read(friendId) == null) {
+        if (userStorage.read(userId).isEmpty() || userStorage.read(friendId).isEmpty()) {
             return false;
         }
 
@@ -36,7 +35,7 @@ public class DBUserService implements IUserService{
     @Override
     public List<User> readAllFriends(int userId) {
 
-        if (userStorage.read(userId) == null) {
+        if (userStorage.read(userId).isEmpty()) {
             return null;
         }
 
@@ -49,7 +48,7 @@ public class DBUserService implements IUserService{
     @Override
     public boolean deleteFriend(int userId, int friendId) {
 
-        if (userStorage.read(userId) == null || userStorage.read(friendId) == null) {
+        if (userStorage.read(userId).isEmpty() || userStorage.read(friendId).isEmpty()) {
             return false;
         }
 
@@ -61,7 +60,7 @@ public class DBUserService implements IUserService{
     @Override
     public List<User> findCommonFriends(int userId, int otherId) {
 
-        if (userStorage.read(userId) == null || userStorage.read(otherId) == null) {
+        if (userStorage.read(userId).isEmpty() || userStorage.read(otherId).isEmpty()) {
             return null;
         }
 
