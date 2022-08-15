@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,6 +12,7 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import javax.validation.Valid;
 import java.util.Collection;
+import java.util.Optional;
 
 @RestController
 @Slf4j
@@ -36,10 +38,10 @@ public class UserController {
 
     @GetMapping(value = "/{id}")
     public ResponseEntity<User> read(@PathVariable(name = "id") int id) {
-        final User user = userStorage.read(id);
+        final Optional<User> user = userStorage.read(id);
 
-        return user != null
-                ? new ResponseEntity<>(user, HttpStatus.OK)
+        return !user.isEmpty()
+                ? new ResponseEntity<>(user.get(), HttpStatus.OK)
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
@@ -48,6 +50,7 @@ public class UserController {
 
         User newUser = userStorage.create(user);
         log.debug(String.valueOf(newUser));
+
         return newUser != null
                 ? new ResponseEntity<>(newUser, HttpStatus.CREATED)
                 : new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -59,7 +62,7 @@ public class UserController {
         final boolean updated = userStorage.update(user);
 
         return updated
-                ? new ResponseEntity<>(userStorage.read(user.getId()), HttpStatus.OK)
+                ? new ResponseEntity<>(userStorage.read(user.getId()).get(), HttpStatus.OK)
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
