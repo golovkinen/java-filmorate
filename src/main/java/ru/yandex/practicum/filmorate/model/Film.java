@@ -1,13 +1,10 @@
 package ru.yandex.practicum.filmorate.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
-import ru.yandex.practicum.filmorate.annotation.PresentOrAfter;
+import ru.yandex.practicum.filmorate.annotation.AfterDate;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Data
@@ -22,13 +19,14 @@ public class Film {
     @Size (max = 200)
     private String description;
     @NonNull
-    @PresentOrAfter("1895-12-28")
+    @AfterDate("1895-12-28")
     private LocalDate releaseDate;
     @NonNull
     @PositiveOrZero
     private Integer duration;
 
-    private List<Genre> genres;
+    private Set<Director> directors;
+    private Set<Genre> genres;
     @NonNull
     private MPA mpa;
 }

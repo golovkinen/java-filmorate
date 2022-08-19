@@ -36,31 +36,45 @@ public class GenreRepository implements IGenreRepository {
     }
 
     @Override
-    public void setFilmGenres(Film film) {
+    public boolean setFilmGenres(Film film) {
 
-        String sqlQuery = "MERGE into FILM_GENRES (FILM_ID, GENRE_ID) " +
+        boolean updated = false;
+
+        if (film.getGenres() == null || film.getGenres().isEmpty()) {
+            deleteFilmGenres(film.getId());
+            return false;
+        }
+
+        deleteFilmGenres(film.getId());
+
+        String sqlQuery = "INSERT into FILM_GENRES (FILM_ID, GENRE_ID) " +
                 "values (?, ?)";
 
-        if (!film.getGenres().isEmpty()) {
-
-            for (Integer genreId : film.getGenres().stream()
-                    .map(Genre::getId)
-                    .collect(Collectors.toList())) {
-                jdbcTemplate.update(sqlQuery
-                        , film.getId()
-                        , genreId);
-            }
+        for (Integer genreId : film.getGenres().stream()
+                .map(Genre::getId)
+                .collect(Collectors.toSet())) {
+            updated = jdbcTemplate.update(sqlQuery
+                    , film.getId()
+                    , genreId) > 0;
         }
+        return updated;
     }
 
     @Override
-    public List<Genre> loadFilmGenres(int filmId) {
+    public Set<Genre> loadFilmGenres(int filmId) {
+
+        Set<Genre> filmGenres = new HashSet<>();
 
         try {
-            return jdbcTemplate.query("SELECT * FROM GENRES WHERE GENRE_ID IN (SELECT GENRE_ID " +
-                    "FROM FILM_GENRES WHERE FILM_ID=?)", this::mapRowToGenre, filmId);
+            for(Genre genre : jdbcTemplate.query("SELECT * FROM GENRES WHERE GENRE_ID IN (SELECT GENRE_ID " +
+                    "FROM FILM_GENRES WHERE FILM_ID=?)", this::mapRowToGenre, filmId)) {
+                filmGenres.add(genre);
+            }
+
+            return filmGenres;
+
         } catch (EmptyResultDataAccessException e) {
-            return new ArrayList<>();
+            return new HashSet<>();
         }
     }
 
@@ -77,8 +91,8 @@ public class GenreRepository implements IGenreRepository {
     @Override
     public void updateFilmGenres(Film film) {
 
-            deleteFilmGenres(film.getId());
-            setFilmGenres(film);
+        deleteFilmGenres(film.getId());
+        setFilmGenres(film);
     }
 
     private Genre mapRowToGenre(ResultSet resultSet, int rowNum) throws SQLException {
