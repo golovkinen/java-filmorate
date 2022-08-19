@@ -11,9 +11,9 @@ public interface IGenreRepository {
 
         List<Genre> readAll();
         Optional<Genre> read (int id);
-        void setFilmGenres(Film film);
+        boolean setFilmGenres(Film film);
 
-        List<Genre> loadFilmGenres (int id);
+        Set<Genre> loadFilmGenres (int id);
 
         boolean deleteFilmGenres(int filmId);
 

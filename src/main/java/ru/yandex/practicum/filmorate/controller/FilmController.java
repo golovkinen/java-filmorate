@@ -2,20 +2,19 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MPA;
 import ru.yandex.practicum.filmorate.service.IFilmService;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.IGenreRepository;
-import ru.yandex.practicum.filmorate.storage.IMPARepository;
+import ru.yandex.practicum.filmorate.storage.*;
 
 import javax.validation.Valid;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -26,15 +25,17 @@ public class FilmController {
     private final IFilmService iFilmService;
     private final IGenreRepository iGenreRepository;
     private final IMPARepository impaRepository;
+    private final IDirectorRepository iDirectorRepository;
     @Autowired
-    public FilmController(@Qualifier("filmRepository") FilmStorage filmStorage,
-                          @Qualifier("DBFilmService") IFilmService iFilmService,
+    public FilmController(FilmStorage filmStorage,
+                          IFilmService iFilmService,
                           IGenreRepository iGenreRepository,
-                          IMPARepository impaRepository) {
+                          IMPARepository impaRepository, IDirectorRepository iDirectorRepository) {
         this.filmStorage = filmStorage;
         this.iFilmService = iFilmService;
         this.iGenreRepository = iGenreRepository;
         this.impaRepository = impaRepository;
+        this.iDirectorRepository = iDirectorRepository;
     }
 
     @GetMapping(value = "/films")
@@ -69,7 +70,6 @@ public class FilmController {
     public ResponseEntity<Film> update(@Valid @RequestBody Film film) {
 
         final boolean updated = filmStorage.update(film);
-        log.debug(String.valueOf(filmStorage.read(film.getId())));
         return updated
                 ? new ResponseEntity<>(filmStorage.read(film.getId()).get(), HttpStatus.OK)
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -158,6 +158,65 @@ public class FilmController {
 
         return !mpa.isEmpty()
                 ? new ResponseEntity<>(mpa.get(), HttpStatus.OK)
+                : new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @GetMapping(value = "/directors")
+    public ResponseEntity<Collection<Director>> readAllDirectors() {
+        final Collection<Director> directors = iDirectorRepository.readAll();
+        log.debug("Текущее количество режиссеров: {}", directors.size());
+        return directors != null
+                ? new ResponseEntity<>(directors, HttpStatus.OK)
+                : new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @GetMapping(value = "/directors/{id}")
+    public ResponseEntity<Director> readDirector (@PathVariable(name = "id") int id) {
+        final Optional<Director> director = iDirectorRepository.read(id);
+
+        return !director.isEmpty()
+                ? new ResponseEntity<>(director.get(), HttpStatus.OK)
+                : new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @PostMapping(value = "/directors")
+    public ResponseEntity<Director> createDirector(@Valid @RequestBody Director director) {
+
+        final Director newDirector = iDirectorRepository.create(director);
+        log.debug(String.valueOf(newDirector));
+        return newDirector != null
+                ? new ResponseEntity<>(newDirector, HttpStatus.CREATED)
+                : new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
+
+    @PutMapping(value = "/directors")
+    public ResponseEntity<Director> updateDirector (@Valid @RequestBody Director director) {
+
+        final boolean updated = iDirectorRepository.update(director);
+        log.debug(String.valueOf(iDirectorRepository.read(director.getId())));
+
+        return updated
+                ? new ResponseEntity<>(iDirectorRepository.read(director.getId()).get(), HttpStatus.OK)
+                : new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @DeleteMapping(value = "/directors/{id}")
+    public ResponseEntity<?> deleteDirector(@PathVariable(name = "id") int id) {
+        final boolean deleted = iDirectorRepository.delete(id);
+
+        return deleted
+                ? new ResponseEntity<>(HttpStatus.OK)
+                : new ResponseEntity<>(HttpStatus.NOT_FOUND);
+
+    }
+
+    @GetMapping(value = "/films/director/{directorId}")
+    public ResponseEntity <List<Film>> readBestDirectorFilms (@PathVariable(name = "directorId") int directorId,
+                                                              @RequestParam(value = "sortBy", required = true) String condition) {
+        final List<Film> directorFilms = iFilmService.readBestDirectorFilms(directorId, condition);
+
+        return directorFilms != null
+                ? new ResponseEntity<>(directorFilms, HttpStatus.OK)
                 : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 }

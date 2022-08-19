@@ -37,9 +37,11 @@ create table if not exists FILM_GENRES
     constraint FILM_GENRES_PK
         primary key (FILM_ID, GENRE_ID),
     constraint FOREIGN_KEY_FG_FILMS
-        foreign key (FILM_ID) references FILMS,
+        foreign key (FILM_ID) references FILMS
+            ON DELETE CASCADE,
     constraint FOREIGN_KEY_FG_GENRES
         foreign key (GENRE_ID) references GENRES
+            ON DELETE CASCADE
 );
 
 create table if not exists USERS
@@ -60,9 +62,11 @@ create table if not exists FILM_LIKES
     constraint FILM_LIKES_PK
         primary key (USER_ID, FILM_ID),
     constraint FILM_LIKES_FILMS_FK
-        foreign key (FILM_ID) references FILMS,
+        foreign key (FILM_ID) references FILMS
+            ON DELETE CASCADE,
     constraint FOREIGN_KEY_USER_ID
         foreign key (USER_ID) references USERS
+            ON DELETE CASCADE
 );
 
 create unique index "Users_Email_unq"
@@ -78,8 +82,31 @@ create table IF NOT EXISTS USER_FRIENDS
     constraint KEY_NAME_USER_ID
         primary key (USER_ID, FRIEND_ID),
     constraint FOREIGN_KEY_FRIENDS
-        foreign key (FRIEND_ID) references USERS,
+        foreign key (FRIEND_ID) references USERS
+            ON DELETE CASCADE,
     constraint FOREIGN_KEY_USERS
         foreign key (USER_ID) references USERS
+            ON DELETE CASCADE
 );
 
+create table if not exists DIRECTORS
+(
+    DIRECTOR_ID   INTEGER auto_increment,
+    DIRECTOR_NAME CHARACTER VARYING(100) not null,
+    constraint DIRECTOR_ID
+        primary key (DIRECTOR_ID)
+);
+
+create table if not exists FILM_DIRECTORS
+(
+    FILM_ID  INTEGER not null,
+    DIRECTOR_ID INTEGER not null,
+    constraint FILM_DIRECTORS_PK
+        primary key (FILM_ID, DIRECTOR_ID),
+    constraint FOREIGN_KEY_FD_FILMS
+        foreign key (FILM_ID) references FILMS
+            ON DELETE CASCADE,
+    constraint FOREIGN_KEY_FD_DIRECTORS
+        foreign key (DIRECTOR_ID) references DIRECTORS
+            ON DELETE CASCADE
+);

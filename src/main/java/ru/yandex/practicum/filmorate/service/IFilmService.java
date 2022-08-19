@@ -8,5 +8,8 @@ public interface IFilmService {
 
     boolean addLike(int userId, int filmId);
     List<Film> readTenBestFilms (int count);
+
+    List<Film> readBestDirectorFilms(int directorId, String param);
+
     boolean deleteLike (int userId, int filmId);
 }
